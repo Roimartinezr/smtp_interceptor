@@ -3,11 +3,11 @@
 # Configura aquÃ­ tus valores personalizados
 servidor = "127.0.0.1"
 puerto = 25
-ip_origen = "spoofed.local"
-remitente = "origen@ejemplo.com"
-destinatario = "destino@ejemplo.com"
-asunto = "Prueba desde Python puro"
-cuerpo = "Este es el cuerpo personalizado.\nCon control total sobre el envÃ­o SMTP."
+ip_origen = "3009.00.98"
+remitente = "albert@gmail.com"
+destinatario = "roi@buenosdias.com"
+asunto = "jyrdsuinuih"
+cuerpo = "llllllllllllllllllllllllllllllll"
 
 # Crear conexiÃ³n TCP
 with socket.create_connection((servidor, puerto)) as s:
