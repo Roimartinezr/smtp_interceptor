@@ -1,0 +1,16 @@
+{
+  "session": {
+    "client_ip": "127.0.0.1",
+    "helo": "smtp.buenosdias.com",
+    "mail_from": "tester@buenosdias.com",
+    "rcpt_tos": ["destino@buenosdias.com"]
+  },
+  "raw_b64": "<mensaje_rfc5322_en_base64>",
+  "headers_pretty": "Subject: ...\r\nFrom: ...\r\n...",
+  "body_preview": "opcional...",
+  "test_override": {
+    "client_ip": "203.0.113.45",
+    "helo": "pruebas.buenosdias.com",
+    "mail_from": "fake@otrodominio.com"
+  }
+}

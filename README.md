@@ -14,6 +14,7 @@ python -m venv .venv
 ```bash
 .\.venv\Scripts\activate
 ```
+Permitir ejecución de scripts en el sistema => ```Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned```
 
 1. Instala dependencias:
 

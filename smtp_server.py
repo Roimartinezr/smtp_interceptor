@@ -1,10 +1,20 @@
 from aiosmtpd.controller import Controller
 from email import policy
 from email.parser import BytesParser
-import requests
-import os
+import base64, requests, os
 
 BACKEND_URL = os.getenv("MAIL_CAPTURE_URL", "http://localhost:8000/api/smtp")
+
+def _collect_overrides(msg):
+    # Prioridad: cabeceras → variables de entorno
+    o_ip   = msg.get("X-SPF-IP") or os.getenv("TEST_SPF_IP")
+    o_helo = msg.get("X-SPF-HELO") or os.getenv("TEST_SPF_HELO")
+    o_mfrom= msg.get("X-SPF-MFROM") or os.getenv("TEST_SPF_MFROM")
+    block = {}
+    if o_ip:   block["client_ip"] = o_ip.strip().strip("[]")
+    if o_helo: block["helo"] = o_helo.strip()
+    if o_mfrom:block["mail_from"] = o_mfrom.strip()
+    return block if block else None
 
 class MailHandler:
 
@@ -15,48 +25,51 @@ class MailHandler:
             print("Error: envelope.content es None.")
             return '550 Error en el contenido del mensaje'
 
-        parser = BytesParser(policy=policy.default)
-        message = parser.parsebytes(envelope.content)
+        client_ip = session.peer[0]                 # IP real
+        helo      = getattr(session, "host_name", "")
+        mail_from = envelope.mail_from
+        rcpt_tos  = envelope.rcpt_tos[:]
 
-        # Cambiar esto en producción, MUY PELIGROSO SI NO
-        # ip_origin = session.peer[0]
-        ip_origin = getattr(session, "host_name", session.peer[0])
-        headers = str(message)
+        raw_bytes = envelope.content
+        raw_b64   = base64.b64encode(raw_bytes).decode("ascii")
 
-        content = message.get_body(preferencelist=('plain', 'html'))
-        body = content.get_content() if content else ""
+        message = BytesParser(policy=policy.default).parsebytes(raw_bytes)
+        headers_pretty = str(message)
+        body = (message.get_body(preferencelist=('plain','html')).get_content()
+                if message.get_body(preferencelist=('plain','html')) else "")
+
+        payload = {
+            "session": {
+                "client_ip": client_ip,
+                "helo": helo,
+                "mail_from": mail_from,
+                "rcpt_tos": rcpt_tos
+            },
+            "raw_b64": raw_b64,
+            "headers_pretty": headers_pretty,
+            "body_preview": body
+        }
+        overrides = _collect_overrides(message)
+        if overrides:
+            payload["test_override"] = overrides
 
         print(f"Recibido correo de: {message['From']} para: {message['To']}")
 
         try:
-            response = requests.post(
-                BACKEND_URL,
-                json={
-                    "from_": message['From'],
-                    "to": message['To'],
-                    "subject": message['Subject'],
-                    "body": body,
-                    "ip": ip_origin,
-                    "headers": headers
-                },
-                timeout=5
-            )
+            response = requests.post(BACKEND_URL, json=payload, timeout=5)
             print(f"Enviado a FastAPI, status {response.status_code}")
         except Exception as e:
             print(f"Error al enviar a FastAPI: {e}")
 
-        return "250 Message accepted for delivery"
+        return "250 OK"
 
 
 if __name__ == "__main__":
-    handler = MailHandler()
-
     controller = Controller(
-        handler=handler,
+        MailHandler(),
         hostname="localhost",
         port=25
     )
-
     controller.start()
 
     print("Servidor SMTP escuchando en puerto 25")
