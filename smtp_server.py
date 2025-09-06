@@ -57,7 +57,7 @@ class MailHandler:
 
         try:
             response = requests.post(BACKEND_URL, json=payload, timeout=5)
-            print(f"Enviado a FastAPI, status {response.status_code}")
+            print(f"Enviado a FastAPI, status {response.status_code} {response.content}")
         except Exception as e:
             print(f"Error al enviar a FastAPI: {e}")
 
