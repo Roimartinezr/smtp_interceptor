@@ -3,8 +3,8 @@
 # Configura aquÃ­ tus valores personalizados
 servidor = "127.0.0.1"
 puerto = 25
-ip_origen = "3009.00.98"
-remitente = "albert@gmail.com"
+ip_origen = "124.0.0.1"
+remitente = "alberto@buenosdias.com"
 destinatario = "roi@buenosdias.com"
 asunto = "jyrdsuinuih"
 cuerpo = "llllllllllllllllllllllllllllllll"
@@ -35,4 +35,31 @@ with socket.create_connection((servidor, puerto)) as s:
     enviar("."); recibir()
 
     enviar("QUIT"); recibir()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
